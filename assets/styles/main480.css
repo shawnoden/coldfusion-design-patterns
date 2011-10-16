@@ -1,0 +1,17 @@
+/*******************************************
+*
+* Main content
+*
+********************************************/
+
+.main {
+	max-width: auto;
+	margin: 0 auto;
+	padding: 0.5em;
+	font-size: 1.5em;
+	line-height: 1.5em;
+}
+
+.main .highlight {
+	padding: 1.5em 0;
+}

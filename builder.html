@@ -1,0 +1,574 @@
+
+<h1>Builder</h1>
+
+<p>
+	The builder pattern provides a method for creating a complex object from smaller pieces in a step by step fashion. 
+	In addition to this, it allows you to change the pieces from one kind to another, so when following the <i>same</i> 
+	construction steps you create a different kind of object.
+</p>
+
+<p>
+	There are two kinds of objects involved in this pattern, a <i>Director</i> and a <i>Builder</i>.
+</p>
+
+<p>
+	The Builder knows how to create the individual parts required and also knows how those parts may 
+	be combined together in a valid way. The Director is responsible for knowing the steps required 
+	to create a specific kind of object. It knows the order of the steps and asks the Builder to piece the parts together.
+</p>
+
+<p>
+	<img alt='Builder and Director UML diagram' src='assets/images/AA6B313C028479897ECD59528DCBF259.png'>
+</p>
+
+<p>
+	In this diagram, the Director's construct() function contains the steps required to create the final 
+	object but asks the Builder object to actually perform those steps.
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<!--- Create the builder and director --->
+<cfset builder = createObject("component","Builder").init()>
+<cfset director = createObject("component","Director").init()>
+
+<!--- Tell the director to construct the end product using the builder --->
+<cfset director.construct(builder)> 
+
+<!--- Ask the builder for the end product --->
+<cfset result = builder.getResult()> 
+{% endhighlight %}
+
+
+
+
+
+<p>
+	An example construct() function may have code such as
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+<cffunction name="construct" output="false">
+    <cfargument name="builder" required="true"> 
+    <cfset arguments.builder.buildPartA()>
+    <cfset arguments.builder.buildPartB()>
+    <cfset arguments.builder.buildPartC()>
+</cffunction>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	We may also have multiple kinds of builders that may all be used with the same Director object. 
+	In this case we need all of the builders to have exactly the same set of build functions.
+</p>
+
+<p>
+	<img alt='Director with multiple Builders UML diagram' src='assets/images/4B4F7117D8C26F0E976C9CEBF528A8C6.png'>
+</p>
+
+<p>
+	In this diagram we have:
+</p>
+
+<ul>
+<li>The Director, which contains the steps required to build a product.</li>
+<li>An AbstractBuilder, which provides empty functions that do nothing and may be overridden in the real Builders.</li>
+<li>
+	Two different builder implementations; ConcreteBuilderA and ConcreteBuilderB, that are <i>real</i> 
+	builder objects that implement the functions in the Abstract Builder. 
+	They also return the result of the build steps.
+</li>
+</ul>
+ 
+<p>
+	<strong>
+	Within CFML The Abstract Builder does not necessarily need to be created but serves as a 
+	reference of the builder functions as well as providing an 'empty' version of each function.
+	</strong>
+</p>
+
+<p>
+	Let's take a look at some examples of a Builder.
+</p>
+
+<h2>Example: Creating a fast food children's meal</h2>
+
+<p>
+	In a fast food restaurant it is common to have a children's meal made up of:
+</p>
+
+<ul>
+<li>a main item,</li>
+<li>a side item,</li>
+<li>a drink, and</li>
+<li>a toy</li>
+</ul>
+
+<p>
+	We can create a Cashier that is responsible for putting all of these items together:
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+<cfcomponent name="Cashier" output="false">
+
+    <cffunction name="prepareKidsMeal" output="false">
+        <cfargument name="kidsMealBuilder" required="true">
+        <cfset var builder = arguments.kidsMealBuilder>
+        <cfset builder.addMainItem()>
+        <cfset builder.addSideItem()>
+        <cfset builder.addDrink()>
+        <cfset builder.addToy()>
+    </cffunction>
+
+</cfcomponent>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	There may be a few different types of special kids meals. For example, we may have a Robot kids meal 
+	that consists of a Robot shaped burger, fries, a blue drink and a robot toy. Another kind of meal may 
+	be a Princess kids meal that consists of a Nuggets, fries, a pink drink and a princess toy. 
+</p>
+
+<p>
+	We can create a RobotMealBuilder and a PrincessMealBuilder that each implement the four required functions. 
+	So to create these two meals we could write:
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+<cfset cashier = createObject("component","Cashier").init()>
+<cfset robotBuilder = createObject("component","RobotMealBuilder").init()>
+<cfset princessBuilder = createObject("component","PrincessMealBuilder").init()>
+
+<cfset cashier.prepareKidsMeal(robotBuilder)>
+<cfset cashier.prepareKidsMeal(princessBuilder)>
+
+<cfset robotMeal = robotBuilder.getMeal()>
+<cfset princessMeal = princessBuilder.getMeal()>
+{% endhighlight %}
+
+
+
+
+
+
+<h2>Example: Creating a maze</h2>
+
+<p>
+	Consider that you are building some software to construct a maze that is made up of rooms 
+	that are connected by doors. In this case we can create a maze builder object that knows 
+	how to create a maze then add rooms and doors.
+</p>
+
+<p>
+	Let's create a trivial &quot;maze&quot; that has the following layout:
+</p>
+
+
+
+
+
+
+{% highlight text %}
+|-------|-------|
+|       |       |
+|   A   #   B   |
+|       |       |
+|------- ---#---|
+|       |       |
+|   C   #   D   |
+|       |       |
+|-------|-------|
+{% endhighlight %}
+
+
+
+
+
+
+
+<p>
+	In this diagram we have four rooms labelled A, B, C and D.
+</p>
+
+<p>
+	The # symbols represent doors, so we have doors from:
+</p>
+
+<ul>
+<li>A to B,</li>
+<li>B to D, and</li>
+<li>C to D</li>
+</ul>
+
+<p>
+	We can create a <b>MazeBuilder</b> that knows how to create the individual parts of our maze:
+</p>
+
+<p>
+	<img alt='Maze Builder UML diagram' src='assets/images/BEEFC6B4909F01733FC619E52B0B181E.png'>
+</p>
+
+<p>
+	Our functions are:
+</p>
+
+<ul>
+<li>createMaze() creates a new empty maze</li>
+<li>createRoom() creates a room with the specified name</li>
+<li>createDoor() creates a door from one room to another. An error would be thrown if the rooms were not adjacent.</li>
+<li>getMaze() returns the completed maze.</li>
+</ul>
+
+<p>
+	Let's now create a <b>MazeGameCreator</b> object that creates mazes:
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+<cfcomponent name="MazeGameCreator" output="false">
+
+    <cffunction name="createMaze" output="false">
+        <cfargument name="mazeBuilder" required="true">
+        <cfset var builder = arguments.mazeBuilder>
+        <cfset builder.createMaze()>
+        <cfset builder.createRoom("A")>
+        <cfset builder.createRoom("B")>
+        <cfset builder.createRoom("C")>
+        <cfset builder.createRoom("D")>
+        <cfset builder.createDoor("A","B")>
+        <cfset builder.createDoor("B","D")>
+        <cfset builder.createDoor("C","D")>
+    </cffunction>
+
+</cfcomponent>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	To use our MazeGameCreator we can write:
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+<!--- Create the builder and game creator --->
+<cfset mazeBuilder = createObject("component","MazeBuilder").init()>
+<cfset mazeGameCreator = createObject("component","MazeGameCreator").init()>
+
+<!--- Create the maze --->
+<cfset mazeGameCreator.createMaze(mazeBuilder)>
+
+<!--- Get the final Maze from the builder --->
+<cfset maze = mazeBuilder.getMaze()>
+{% endhighlight %}
+
+
+
+
+
+<h2>Example: Parsing complex text files (Advanced)</h2>
+
+<p>
+	Consider a system that tracks all of the locations of a package throughout a journey 
+	from its origin to destination. This tracking system may not have been developed by 
+	you and you simply receive a complex data file that contains all of the relevant 
+	tracking information. This complex data file may have a complicated format as follows.
+</p>
+
+
+
+
+
+
+{% highlight text %}
+MGS+20091204+1623
+    ITS+1024123
+        LOC+AU+SYD
+        DTM+20091201+0903
+        LOC+AU+MEL
+        DTM+20091202+1125
+    ITE
+    ITS+8765453
+        LOC+AU+SYD
+        DTM+20091201+1021
+        LOC+NZ+WEL
+        DTM+20091203+1355
+        LOC+NZ+AUK
+        DTM+20091204+1123
+    ITE
+MGE
+{% endhighlight %}
+
+
+
+
+
+
+
+<p>
+	(This is a very simplified mock file format with a similar concept to a format such as 
+	<a href="http://en.wikipedia.org/wiki/EDIFACT">EDIFACT</a>)
+</p>
+
+<p>
+	In our mock example, these cryptic tags mean the following:
+</p>
+
+<ul>
+<li>MGS = Message Start, followed by a date and time that the message was generated</li>
+<li>MGE = Message End</li>
+<li>ITS = Item Start, followed by an unique item number</li>
+<li>ITE = Item End</li>
+<li>DTM = Date and time that an item was processed</li>
+<li>LOC = Location that an item was processed, followed by country code and city code</li>
+</ul>
+
+<p>
+	So we can see that this is a message with two items of data. The first item was processed at two locations; 
+	Sydney and Melbourne. The second item was processed at three locations; Sydney, Wellington and Auckland.
+</p>
+
+<h3>Creating a Message Builder</h3>
+
+<p>
+	A Builder may be useful in helping us convert this file into a more usable representation. 
+	Lets create an object called an <b>AbstractMessageBuilder</b>.
+</p>
+
+<p>
+	<img alt='Abstract Message Builder UML Diagram' src='assets/images/F82E5612AB391D5A2AA869F6D3A04106.png'>
+</p>
+
+<p>
+	In this example:
+</p>
+
+<ul>
+<li>addMessage() indicates the start of a new &quot;message&quot;.</li>
+<li>addItem() indicates that a new item was found.</li>
+<li>addItemLocation() indicates a location where the item was processed</li>
+<li>addItemDate() indicates the date and time the item was at a location</li>
+</ul>
+
+<p>
+	This AbstractMessageBuilder really just represents the functions required in a builder. 
+	We now need to create an <i>actual</i> builder that implements these functions. 
+	Let's create a <b>StructMessageBuilder</b> that extends the AbstractMessageBuilder and 
+	is designed to creates a simple struct version of the input message data.
+</p>
+
+<p>
+	In our StructMessageBuilder we implement each of the functions above, but we also add 
+	in an extra function <b>getStruct()</b> which returns the final result.
+</p>
+
+<p>
+	Our AbstractMessageBuilder may also have internal logic to ensure that the build steps 
+	were processed in a valid order, and perhaps throw exceptions if a valid order was not followed. 
+</p>
+
+<p>
+	So at this point we now have:
+</p>
+
+<p>
+	<img alt='StructMessageParser UML diagram' src='assets/images/D713090FB92BFA4206E4287584AC308D.png'>
+</p>
+
+<p>
+	Now suppose that our requirement changed and we needed the builder to return a different format 
+	from our simple struct. Perhaps we need it to return an XML object instead. In this case we just 
+	create different builder object that caters to this new requirement.
+</p>
+
+<p>
+	Let's create an <b>XMLMessageBuilder</b> that had extends the AbstractMessageBuilder, but instead has 
+	a <b>getXML()</b> function that returns an XML object. 
+</p>
+
+<p>
+	<img alt='XMLMessageParser UML diagram' src='assets/images/8ABDA4CD907A5887D896C27C35D46E46.png'>
+</p>
+
+<p>
+	Because these alternative builder objects all have exactly the same functions then they can easily 
+	be substituted for one another without changing the calling code that reads the actual data file.
+</p>
+
+<h3>Creating a Message Parser</h3>
+
+<p>
+	Let's create a Message Parser object that will make use of our builder code
+</p>
+
+<p>
+	<img alt='MessageParser UML diagram' src='assets/images/0602C51C812C0702274FB63C2BC5A7F9.png'>
+</p>
+
+<p>
+	For this example we pass the input data file path and whichever builder is required to the parse() function.
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+<cfcomponent name="MessageParser" output="false">
+
+    <cffunction name="parse" output="false">
+        <cfargument name="messageFile" required="true">
+        <cfargument name="messageBuilder" required="true">
+        <cfset var builder = arguments.messageBuilder>
+        <cfset var line = "">
+        <cfset var lineCode = "">
+        <cfset var local = {}>
+        <cfloop index="line" file="#arguments.messageFile#">
+            <cfset lineCode = trim(left(line,3))>
+            <cfswitch expression="#lineCode#">
+                <cfcase value="MGS">
+                    <cfset local.date = ... Parse date from line into a date object ...>
+                    <cfset builder.addMessage(local.date)>
+                </cfcase>
+                <cfcase value="ITE">
+                    <cfset local.itemNumber = ... Parse item number from line ...>
+                    <cfset builder.addItem(local.itemNumber)>
+                </cfcase>
+                <cfcase value="DTM">
+                    <cfset local.date = ... Parse date from line into a date object ...>
+                    <cfset builder.addItemDate(local.date)>
+                </cfcase>
+                <cfcase value="LOC">
+                    <cfset local.country = ... Parse country code from line ...>
+                    <cfset local.city = ... Parse city code from line ...>
+                    <cfset builder.addItemLocation(local.country,local.city)>
+                </cfcase>
+            </cfswitch>
+        </cfloop>
+    </cffunction>
+
+</cfcomponent>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	To use our message parser we may write:
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+<!--- Create the builder and parser --->
+<cfset builder = createObject("component","StructMessageBuilder").init()>
+<cfset parser = createObject("component","MessageParser").init()> 
+
+<!--- Parse the file and get the result --->
+<cfset parser.parse(messageFile,builder)>
+<cfset messageStruct = builder.getStruct()>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	If we wanted to process the file and get an XML file, we just swap in the XMLMessageParser:
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+<!--- Create the builder and parser --->
+<cfset builder = createObject("component","XMLMessageBuilder").init()>
+<cfset parser = createObject("component","MessageParser").init()> 
+
+<!--- Parse the file and get the result --->
+<cfset parser.parse(messageFile,builder)>
+<cfset messageXML = builder.getXML()>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	So the MessageParser object, which is responsible for reading the input file 
+	and calling the appropriate functions on the builder, remains unchanged and 
+	independent of the resulting representation of the output.
+</p>
+
+<h3>UML diagram</h3>
+
+<p>
+	Following is a UML diagram of out Message Parser and Builder objects.
+</p>
+
+<p>
+	<img alt='Builder Pattern Example UML diagram' src='assets/images/58B100B53317E94CF2D94A45A94CBD3A.png'>
+</p>
+
+<h2>References</h2>
+
+<p>
+	Builder Pattern<br/>
+	<a href="http://en.wikipedia.org/wiki/Builder_pattern/">http://en.wikipedia.org/wiki/Builder_pattern/</a>
+</p>
+
+<p>
+	Builder Design Pattern<br/>
+	<a href="http://sourcemaking.com/design_patterns/builder/">http://sourcemaking.com/design_patterns/builder/</a>
+</p>
+
+<p>
+	Builder Pattern<br/>
+	<a href="http://www.oodesign.com/builder-pattern.html">http://www.oodesign.com/builder-pattern.html</a>
+</p>
+
+
+
+

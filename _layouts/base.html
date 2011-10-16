@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<title>{{ page.title }}</title>
+	
+	<link href='http://fonts.googleapis.com/css?family=Alike' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="assets/styles/reset.css">
+	<link rel="stylesheet" href="assets/styles/main.css">
+	<link rel="stylesheet" href="assets/styles/main480.css" media="handheld and (max-width: 480px), screen and (max-device-width: 480px),screen and (max-width: 600px)">
+
+	<!--
+	<link rel="stylesheet" href="assets/styles/syntax.css">
+	-->
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+</head>
+<body>
+<div id="container">
+
+<header>
+	<h1><a href="index.html">ColdFusion Design Patterns</a></h1>
+	<nav>
+		<ul>
+			<li><a href="index.html">Home</a></li>
+		</ul>
+	</nav>
+</header>
+
+<div class="main">
+	{{ content }}
+</div>
+
+<footer>
+	&copy; Copyright 2009 - 2011 <a href="http://www.webcode.com.au">Kevan Stannard</a>
+</footer>
+
+
+<script type="text/javascript">
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-11521675-1']);
+_gaq.push(['_trackPageview']);
+
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+</script>
+
+</body>
+</html>
