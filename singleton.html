@@ -1,0 +1,432 @@
+---
+layout: base
+title: Singleton
+---
+
+<h1>Singleton</h1>
+
+<p>
+	The singleton pattern provides a technique for creating a single instance of an object 
+	and for allowing convenient access to that object throughout the application.
+</p>
+
+<h2>Singletons via Application.cfc</h2>
+
+<p>
+	The simplest technique for implementing a singleton within CFML is to create the object 
+	when your application is first started. This is easy to accomplish using the <b>onApplicationStart()</b> 
+	function with your <b>Application.cfc</b> file.
+</p>
+
+<p>
+	<img alt='Application singleton UML diagram' src='assets/images/EE24E7750D4CCDD269C04D31CB3E3824.png' />
+</p>
+
+<p>
+	In code, we may simply write our onApplicationStart() function as:
+</p>
+
+
+
+{% highlight cfm %}
+<cffunction name="onApplicationStart" output="false">
+    <cfset application.singleton = createObject("component","Singleton").init()>
+</cffunction>
+{% endhighlight %}
+
+
+
+<h2>Singletons via a Singleton Factory</h2>
+
+
+<p>
+	An alternate technique to managing singletons within CFML is with a 
+	<i>Singleton Factory</i>. Factories are objects that know how to create other objects. 
+	In the case of a Singleton Factory, it ensures that only a single instance of each kind of object is created.
+</p>
+
+<p>
+	<img alt='Singleton Factory UML diagram' src='assets/images/A21B37A5C5D1F7EEE239034A951AC8AB.png' />
+</p>
+
+<p>
+	Your Singleton Factory should be created on application start up and have it's reference placed within 
+	the application scope (as described above), however the singletons it manages are held privately within it. 
+	Each singleton object is identified by a unique name and the <b>getSingleton(name)</b> function provides you 
+	with access to those singletons.
+</p>
+
+<p>
+	There are various techniques for implementing a Singleton Factory and the right approach will depend on your 
+	particular needs, but let's take a look at a fairly straightforward approach.
+</p>
+
+<h2>Example: Singleton Factory</h2>
+
+<p>
+	In this example we will create a Singleton Factory that provides you with access to a <b>Datasource</b> 
+	object and a <b>UserGateway</b> object, but as many objects as you need could be added. 
+</p>
+
+<p>
+	For this implementation we will:
+</p>
+
+<ol>
+	<li>provide the factory with a struct containing application configuration details, then</li>
+	<li>immediately create all of our singleton objects.</li>
+</ol>
+
+<p>
+	Let's first take a look at how our Singleton Factory might be initialised.
+</p>
+
+{% highlight cfm %}
+<component name="SingletonFactory" output="false">
+
+    <!--- Application configuration data --->
+    <cfset variables.config = 0>
+
+    <!--- Struct to hold all of our singletons --->
+    <cfset variables.singletons = {}>
+
+    <!--- Initialisation --->
+    <cffunction name="init" output="false">
+        <cfargument name="config" type="struct" required="true">
+        <cfset variables.config = arguments.config>
+        <cfset createSingletons()>
+        <cfreturn this>
+    </cffunction>
+
+    <!--- Create all of our singletons --->
+    <cffunction name="createSingletons" output="false" access="private">
+        ...
+    </cffunction>
+
+</component>
+{% endhighlight %}
+
+<p>
+	You can see that when the factory is created we need to provide some configuration data as a struct. 
+	This will contain details such as the datasource name, username and password.
+</p>
+
+<p>
+	Let's now take a look at how our <b>createSingletons()</b> function may be implemented.
+</p>
+
+{% highlight cfm %}
+<!--- Private helper function to add singletons --->
+<cffunction name="addSingleton" output="false" access="private">
+    <cfargument name="name" required="true">
+    <cfargument name="object" required="true">
+    <cfset variables.singletons[arguments.name] = arguments.object>
+</cffunction>
+
+<cffunction name="createSingletons" output="false" access="private">
+
+    <cfset local = {}>
+
+    <!--- Datasource --->
+    <cfset local.datasource = createObject("component","com.util.Datasource").init(variables.config.dsname,variables.config.dsuser,variables.config.dspass)>
+
+    <!--- UserGateway --->
+    <cfset local.userGateway = createObject("component","com.user.UserGateway").init()>
+    <cfset local.userGateway.setDatasource(local.datasource)>
+
+    <!--- Register the objects as available singletons --->
+    <cfset addSingleton("datasource",local.datasource)>
+    <cfset addSingleton("userGateway",local.userGateway)>
+
+</cffunction>
+{% endhighlight %}
+
+ 
+<p>
+	Lastly, we just need a simple <b>getSingleton()</b> function to access our singletons:
+</p>
+
+{% highlight cfm %}
+<cffunction name="getSingleton" output="false">
+    <cfargument name="name" required="true">
+    <cfreturn variables.singletons[arguments.name]>
+</cffunction>
+{% endhighlight %}
+
+
+<p>
+	Our SingletonFactory should be created on application startup. 
+</p>
+
+{% highlight cfm %}
+<cffunction name="onApplicationStart" output="false">
+    <cfset var config = ... create config struct ...>
+    <cfset application.singletonFactory = createObject("component", "SingletonFactory").init(config)>
+</cffunction>
+{% endhighlight %}
+
+<p>
+	Then to use our singleton factory in code we may write:
+</p>
+
+{% highlight cfm %}
+<cfset userGateway = application.singletonFactory.getSingleton("UserGateway")>
+{% endhighlight %}
+
+
+<h2>Example: Singleton Factory using ColdSpring</h2>
+
+<p>
+	<a href="http://www.coldspringframework.org/">ColdSpring</a> is the defacto object factory for CFML development. 
+	Let's take a quick look at how you might manage your singletons with ColdSpring.
+</p>
+
+<p>
+	After installing ColdSpring you need to create an XML file that describes the singleton objects you are using. 
+	For example, to describe our Datasource and UserGateway objects we may create a <b>coldspring.xml</b> file:
+</p>
+
+
+{% highlight xml %}
+<beans default-autowire="byName">  
+
+    <bean id="datasource" class="com.util.Datasource" singleton="true">
+        <constructor-arg name="name"><value>yourDatasourceName</value></constructor-arg>
+        <constructor-arg name="username"><value>yourDatasourceUsername</value></constructor-arg>
+        <constructor-arg name="password"><value>yourDatasourcePassword</value></constructor-arg>
+    </bean>
+
+    <bean id="userGateway" class="com.user.UserGateway" singleton="true" />
+
+</beans>
+{% endhighlight %}
+
+
+
+<p>
+	You can see from this example that ColdSpring uses the terminology <i>bean</i> to mean <i>object</i>. 
+	The <b>id</b> attribute provides a unique name for the object and <b>class</b> provides the path to 
+	the singleton components. The <b>singleton</b> attribute is set to true to indicate that these are singleton objects.
+</p>
+
+<p>
+	The Datasource object has an init() function with three arguments; name, username and password. 
+	In this example we are hardcoding these directly into the XML file, but ColdSpring also allows 
+	details such as these to be variable parameters.
+</p>
+
+<p>
+	The ColdSpring factory is typically created on application startup.
+</p>
+
+{% highlight cfm %}
+<cffunction name="onApplicationStart" output="false">
+
+    <!--- Create the ColdSpring factory --->
+    <cfset var beanFactory = createObject("component", "coldspring.beans.DefaultXmlBeanFactory").init()>
+
+    <!--- Load up the singleton beans we have specified --->
+    <cfset beanFactory.loadBeans( expandPath("coldspring.xml") )>  
+
+    <!--- Put the factory in the application scope ready for use. --->
+    <cfset application.beanFactory = beanFactory>
+
+</cffunction>
+{% endhighlight %}
+
+
+
+<p>
+	ColdSpring provides a <b>getBean()</b> function to access the objects it manages, 
+	so to use ColdSpring we may write something like:
+</p>
+
+
+{% highlight cfm %}
+<cfset userGateway = application.beanFactory.getBean("UserGateway")>
+{% endhighlight %}
+
+
+<p>
+	Which is essentially identical to how we use the SingletonFactory above.
+</p>
+
+
+<h2>Can we ensure that only one instance exists?</h2>
+
+<p>
+	The intent of the conventional singleton pattern requires that we <i>ensure</i> that only 
+	one instance of each singleton object can ever be created. 
+	Within CFML this is not possible in any practical way.
+</p>
+
+<p>
+	The better approach is to simply introduce a convention in your code about how singletons 
+	are created and managed such as by using one of the approaches described above.
+</p>
+
+<h2>Singleton objects and global access</h2>
+
+<p>
+	When singleton objects are created they are essentially stored in the application scope 
+	(whether directly, or indirectly via a singleton provider). However, there are two choices 
+	in how they are used within the rest of your application.
+</p>
+
+<p>
+	The first approach is to refer to the singletons directly within the application scope. For example:
+</p>
+
+{% highlight cfm %}
+<cfset application.singleton.doSomething()>
+{% endhighlight %}
+
+
+<p>
+	This approach is using a &quot;global access&quot; approach which can cause code to become 
+	more difficult to change over time. This technique has your code <i>reaching out</i> and 
+	accessing the global application scope which can be particularly problematic when used within CFC's. 
+	For example, accessing a global scope in this way can make automated unit testing difficult or impossible. 
+	Even if you are not doing unit testing now, this approach may prevent you from introducing automated unit 
+	testing in the future.
+</p>
+
+<p>
+	A preferable approach is to use a technique called dependency injection. 
+	With this approach you explicitly provide the singleton objects to any other objects that need them.
+</p>
+
+<p>
+	For example, suppose we have an object that needs to know about a certain configuration option. 
+	Using the &quot;global access&quot; approach we may write:
+</p>
+
+{% highlight cfm %}
+<cfcomponent output="false">
+
+    <!--- Access the application scope directly --->
+    <cfset variables.userCounter = application.singletonFactory.getSingleton("userCounter")>
+
+    <cffunction name="numberOfUsers" output="false">
+        <cfreturn variables.userCounter.numberOfUsers()>
+    </cffunction>
+
+</cfcomponent>
+{% endhighlight %}
+
+<p>
+	The &quot;dependency injection&quot; approach would be to provide the userCounter 
+	object to the component explicitly via a setUserCounter() function:
+</p>
+
+{% highlight cfm %}
+<cfcomponent output="false">
+
+    <cfset variables.userCounter = 0>
+
+    <!--- Use dependency injection to pass in the userCounter object --->
+    <cffunction name="setUserCounter" output="false">
+        <cfargument name="userCounter" required="true">
+        <cfset variables.userCounter = arguments.userCounter>
+    </cffunction>
+
+    <cffunction name="numberOfUsers" output="false">
+        <cfreturn variables.userCounter.numberOfUsers()>
+    </cffunction>
+
+</cfcomponent>
+{% endhighlight %}
+
+
+<p>
+	The setUserCounter() is called when the object is first created (typically using an object factory. 
+	Then the numberOfUsers() function just uses whatever user counter object was provided.
+</p>
+
+<p>
+	This second technique is no longer <i>coupled</i> to the application scope and results in more maintainable 
+	and testable code.
+</p>
+
+<h2>Difference from the conventional singleton pattern</h2>
+
+<p>
+	The conventional intent of the singleton pattern is to satisfy two criteria:
+</p>
+
+<ol>
+	<li>ensure that a class has only one instance in an application, and</li>
+	<li>provide a global point of access to it.</li>
+</ol>
+
+<p>
+	When this pattern was originally published it was based on certain features being present 
+	in whatever language implemented the pattern (such as C++ and Smalltalk), 
+	specifically <i>private constructors</i>, which prevent a class from being explicitly created, 
+	and <i>class methods</i> which are essentially 'global' methods that can be called without 
+	needing to create an instance of the class first. 
+</p>
+
+<p>
+	CFML is a language of a different kind and does not have either private constructors or class methods. 
+	As a result the suggested patterns presented here differ from the conventional singleton patterns 
+	described elsewhere (see references below).
+</p>
+
+<h2>Criticism of the Singleton pattern</h2>
+
+<p>
+	Is the Singleton pattern evil? If you research this pattern you will notice that the Singleton pattern 
+	has received a <a href="http://www.google.com/search?q=singleton+pattern+bad">significant amount of criticism</a>. 
+</p>
+
+<p>
+	This criticism is focused particularly on the <i>provide a global point of access</i> aspect of the pattern. 
+</p>
+
+<p>
+	In other words if you create a singleton such as application.yourAwesomeSingleton and then whenever you need 
+	it you just refer to it directly from within your components then this is considered the bad usage of a singleton. 
+	I.e. it is a global variable with a single point of access.
+</p>
+
+<p>
+	If you use dependency injection and inject your singleton into whichever objects need it, 
+	then your objects are no longer treating it as a global variable. 
+	This is then good usage of your singleton.
+</p>
+
+<h2>References</h2>
+
+<p>
+	Singleton Pattern<br/>
+	<a href="http://en.wikipedia.org/wiki/Singleton_pattern">http://en.wikipedia.org/wiki/Singleton_pattern</a>
+</p>
+
+<p>
+	Singleton Pattern<br/>
+	<a href="http://www.oodesign.com/singleton-pattern.html">http://www.oodesign.com/singleton-pattern.html</a>
+</p>
+
+<p>
+	Singleton Design Pattern<br/>
+	<a href="http://sourcemaking.com/design_patterns/singleton">http://sourcemaking.com/design_patterns/singleton</a>
+</p>
+<p>
+	ColdSpring Framework<br/>
+	<a href="http://www.coldspringframework.org/">http://www.coldspringframework.org/</a>
+</p>
+
+<h2>Further Reading</h2>
+
+<p>
+	Flaw: Brittle Global State - Singletons<br/>
+	<a href="http://misko.hevery.com/code-reviewers-guide/flaw-brittle-global-state-singletons/">http://misko.hevery.com/code-reviewers-guide/flaw-brittle-global-state-singletons/</a>
+</p>
+
+<p>
+	Singletons are Pathological Liars<br/>
+	<a href="http://misko.hevery.com/2008/08/17/singletons-are-pathological-liars/">http://misko.hevery.com/2008/08/17/singletons-are-pathological-liars/</a>
+</p>
+
+
