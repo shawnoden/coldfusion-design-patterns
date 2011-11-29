@@ -1,0 +1,735 @@
+---
+layout: base
+title: Iterator
+---
+
+<h1>Iterator</h1>
+
+<p>
+	One of the fundamental aspects of our daily work involves using data structures that contain many items. 
+	These include lists, arrays, structs and queries, and perhaps more sophisticated data structures 
+	such as trees. Each of these data structures requires a different approach to loop through their elements. 
+	For example, an array uses a numeric index, a struct uses a named key index, list items are accessed 
+	sequentially without any kind of index, etc. 
+</p>
+
+<p>
+	In object oriented CFML these data structures are typically created and used within components. 
+	When we need to use these data structures we can just create a function on the component that 
+	returns the required data. 
+</p>
+
+<p>
+	For example, if you were writing a shopping cart you might store your items in an array, 
+	then have a function items() which simply returns your array of items.
+</p>
+
+<p>
+	<img alt='Shopping cart UML diagram' src='assets/images/5A78133F38A5BE26AEE560D939DD8489.png' /> 
+</p>
+
+<p>
+	Your application may need to access the set of items from many places throughout your code:
+</p>
+
+<p>
+	<img alt='Shopping cart used on many pages UML diagram' src='assets/images/EC679C56B52492CDEA1D0E5E863B20FF.png' />
+</p>
+
+<p>
+	If your cart code is unlikely to change much then this is a clean and simple approach, 
+	however if you needed to change the data type of the items from an array to a struct then 
+	you would need to update every place in your application where the items were referenced 
+	and change the loop from an array loop to a struct loop.
+</p>
+
+<p>
+	Whenever you have an object returning one of it's internal data structures you may be 
+	<i>revealing details about how your object was implemented</i>. As a general design 
+	guideline we want to minimise exposing how our objects are implemented internally. 
+	In the case of our shopping cart it would be nice if we could hide the fact that 
+	we are actually using an array to internally store the items.
+</p>
+
+<p>
+	An Iterator provides a generalised technique for sequentially accessing elements 
+	from a group and allows you to hide the real data structure of your items.
+</p>
+
+<h2>Structure of an Iterator</h2>
+ 
+<p>
+	An Iterator is an object that is wrapped around your data structure and simply 
+	keeps track of the next item that should be made available. There are a number 
+	of approaches to designing Iterators but a common approach requires that every 
+	Iterator implement two functions: <b>hasNext()</b> and <b>next()</b>.
+</p>
+
+<p>
+	<img alt='Iterator structure UML diagram' src='assets/images/2DDF19B78EAC43AB75A909FD6BCFF051.png' />
+</p>
+
+<p>
+	The hasNext() function returns either true or false indicating if another item available from the set.
+</p>
+
+<p>
+	The next() function returns the next element from the set.
+</p>
+
+<p>
+	So to use an Iterator in code, you may write:
+</p>
+
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> iterator = ...<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;iterator.hasNext()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> element = iterator.next()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    ... <span style="color:#7F0055; font-weight: bold; ">do</span> something with element ...
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfloop&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	You will notice that when using an Iterator we have no knowledge of 
+	how the data was originally stored. It may have been an array, a struct, 
+	a list, etc. but this information is now hidden. And as a user of the 
+	iterator we are not concerned with whatever the original data structure was, 
+	we only need a technique for accessing all elements of the set.
+</p>
+
+<h2>Example: Iterating over elements of an array</h2>
+
+<p>
+	Let's create an generic ArrayIterator that allows us to iterate over array elements. 
+	We know that we need to implement the two functions hasNext() and next(), 
+	so our ArrayIterator will look something like this:
+</p>
+
+<p>
+	<img alt='Array Iterator UML diagram' src='assets/images/D675087E82003F716311002B9FFED9EF.png' />
+</p>
+
+<p>
+	We will provide the array as a parameter to the ArrayIterators init() function.
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfcomponent</span></strong> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;array&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = arguments.array<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	Now let's implement the <b>hasNext()</b> function. To implement this we need to keep 
+	track of the index to the <i>next</i> element of our array. We know that we have a 
+	next element available if this index is less than or equal to the length of our array.  
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfcomponent</span></strong> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.next = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;array&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = arguments.array<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.next = 1<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;hasNext&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.next le arrayLen(variables.array)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	Lastly, let's add our <b>next()</b> function. This fetches the next element of the array, 
+	then increments the index by one ready for the next element.
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfcomponent</span></strong> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.next = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;array&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = arguments.array<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.next = 1<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;hasNext&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.next le arrayLen(variables.array)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;next&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> element = variables.array[variables.next]<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.next = variables.next + 1<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> element<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	To use our Array Iterator we may write:
+</p>
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> arr = []<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> arr[1] = <span style="color:#2A00FF; ">&quot;Red&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> arr[2] = <span style="color:#2A00FF; ">&quot;Green&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> arr[3] = <span style="color:#2A00FF; ">&quot;Blue&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> iterator = <span style="color:#7F0055; font-weight: bold; ">createObject</span>(<span style="color:#2A00FF; ">&quot;component&quot;</span>,<span style="color:#2A00FF; ">&quot;ArrayIterator&quot;</span>).init(arr)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;iterator.hasNext()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> colour = iterator.next()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <span style="color:#3F7F5F; ">&#60;!--- Do something with the colour variable---&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfloop&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	This is a simple example only and does not include any error or multiple thread handling.  
+</p>
+
+<h2>Example: Using an ArrayIterator in a Shopping Cart</h2>
+
+<p>
+	Let's write a simple example of a shopping cart that makes use of our ArrayIterator.
+</p>
+
+<p>
+	<img alt='Shopping cart UML diagram' src='assets/images/C13B9D9784A04026301C688ECD99F314.png' />
+</p>
+
+<p>
+	<b>addItem(item)</b> adds an item to our cart.
+</p>
+
+<p>
+	<b>items()</b> returns an iterator of all shopping cart items.
+</p>
+
+<p>
+	This may be implemented as follows:
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;component</span></strong> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <span style="color:#3F7F5F; ">&#60;!--- Array to hold our shopping cart items ---&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.instance = {}<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.instance.items = []<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <span style="color:#3F7F5F; ">&#60;!--- Initialisation ---&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> <span style="color:#7F0055; font-weight: bold; ">this</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+    <span style="color:#3F7F5F; ">&#60;!--- Add an item to the cart ---&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;addItem&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;item&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> arrayAppend(variables.instance.items,arguments.item)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+    <span style="color:#3F7F5F; ">&#60;!--- Return the items as an iterator ---&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;items&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> <span style="color:#7F0055; font-weight: bold; ">var</span> items = <span style="color:#7F0055; font-weight: bold; ">createObject</span>(<span style="color:#2A00FF; ">&quot;component&quot;</span>,<span style="color:#2A00FF; ">&quot;ArrayIterator&quot;</span>).init(variables.instance.items)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> items<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	Then using our shopping cart we may have:
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> cart.addItem(item1)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> cart.addItem(item2)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> cart.addItem(item3)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> items = cart.items()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;items.hasNext()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> item = items.next()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <span style="color:#3F7F5F; ">&#60;!--- Do something with item ---&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfloop&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<h2>Iterating Business Objects</h2>
+
+<p>
+	Within CFML there is a performance penalty associated with creating objects, 
+	and this becomes more apparent when dealing with many objects. For example, 
+	if you perform a query that returns one hundred or so records, then converting 
+	each record to an object will have a noticeable performance impact on your application.
+</p>
+
+<p>
+	An Iterating Business Object (IBO) is a pattern made popular by 
+	<a href="http://www.pbell.com/index.cfm/IBO">Peter Bell</a> that is specific to the CFML language. 
+	It allows the benefits of objects without the performance problems of object creation. 
+	An IBO appears as though it were a regular object, but at the same time is also an Iterator 
+	that contains a set of many data items.
+</p>
+
+<p>
+	Let's consider a User object with the functions name(), dateOfBirth() and age().
+</p>
+
+<p>
+	<img alt='User UML diagram' src='assets/images/D730963706657E5E141BC1CD29D27AD4.png' />
+</p>
+
+<p>
+	Objects of this kind only contain the data for a <i>single</i> user.
+</p>
+
+<p>
+	Now, let's create a User IBO, which has the same set of functions, plus an additional next() 
+	function. Notice that we are using a different name for this object to distinguish it from 
+	a conventional business object.
+</p>
+
+<p>
+	<img alt='Iterating User UML diagram' src='assets/images/AA628BB31619EDB07E8153207DBF70F7.png' />
+</p>
+
+<p>
+	Objects of this kind wraps the data for <i>many</i> users, but the IBO behaves as though it 
+	was only one of those users. Internally it is keeping track of which users' data is the &quot;current&quot; data.
+</p>
+
+<p>
+	The <b>next()</b> function tells the IBO to change itself internally so it should start 
+	behaving like the next User in the set. Unlike the next() function in the Iterator pattern 
+	described above which returns the next element from the set, this function returns either 
+	true or false to indicate if it has current valid data.
+</p>
+
+<p>
+	Let's take a look at how an IBO might be used.
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> userIBO = ...<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;userIBO.next()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfoutput&#62;</span></strong>
+        #userIBO.name()#, #userIBO.age()#<strong><span style="color:#7F0055; font-weight: bold; ">&#60;br</span></strong><span style="color:#7F0055; font-weight: bold; ">/&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfoutput&#62;</span></strong>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfloop&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	We can see that the IBO is behaving like both an iterator and a regular business object.
+</p>
+
+<h2>Example: Iterating Business Object for a query</h2>
+
+<p>
+	Query data is perhaps the most common scenario where an IBO may be useful, 
+	so let's develop an IBO to iterate over a query of users.
+</p>
+
+<p>
+	First, we need to provide our query data to the IBO's init() function:
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;component</span></strong> name=<span style="color:#2A00FF; ">&quot;UserIBO&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;userQuery&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = arguments.userQuery<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> <span style="color:#7F0055; font-weight: bold; ">this</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	To implement our next() function we will need to keep track of which record 
+	from the query data we are up to. When our &quot;currentRow&quot; pointer 
+	has a higher value than the number or records in the query then we know that 
+	there is no more data available.
+</p>
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;component</span></strong> name=<span style="color:#2A00FF; ">&quot;UserIBO&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.currentRow = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;userQuery&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = arguments.userQuery<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> <span style="color:#7F0055; font-weight: bold; ">this</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;next&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.currentRow = variables.currentRow + 1<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.currentRow le variables.userQuery.recordCount<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	Now let's implement our name(), dateOfBirth() and age() functions, 
+	which makes use of accessing query data as an array.
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;component</span></strong> name=<span style="color:#2A00FF; ">&quot;UserIBO&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.currentRow = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;userQuery&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = arguments.userQuery<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> <span style="color:#7F0055; font-weight: bold; ">this</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;next&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.currentRow = variables.currentRow + 1<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.currentRow le variables.userQuery<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;name&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.userQuery[<span style="color:#2A00FF; ">&quot;name&quot;</span>][variables.currentRow]<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;dateOfBirth&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.userQuery[<span style="color:#2A00FF; ">&quot;dob&quot;</span>][variables.currentRow]<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;age&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> dateDiff(<span style="color:#2A00FF; ">&quot;yyyy&quot;</span>, dateOfBirth(), now())<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	To use our UserIBO we may have something like:
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> userIBO = userService.findAllUsers()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;userIBO.next()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfoutput&#62;</span></strong>
+        #userIBO.name()#, #userIBO.age()#<strong><span style="color:#7F0055; font-weight: bold; ">&#60;br</span></strong><span style="color:#7F0055; font-weight: bold; ">/&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfoutput&#62;</span></strong>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfloop&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	This is only a simple example that does not include error or multiple thread handling.
+</p>
+
+<h2>Advantages and disadvantages of an Iterating Business Object</h2>
+
+<p>
+	Let's take a quick review of the advantages and disadvantages for an IBO.
+</p>
+
+<h3>Advantages</h3>
+
+<ul>
+<li>Only one object per data set, so little or no performance impact</li>
+<li>Hides details of the underlying data structure (query, array, etc)</li>
+<li>Makes your data look like a regular object</li>
+</ul>
+
+<h3>Disadvantages</h3>
+
+<ul>
+<li>
+	The &quot;insides&quot; of your object change on each iteration 
+	so you cannot keep references to individual elements in the set 
+	(i.e. only one reference exists for all elements in the set)
+</li>
+<li>More care needs to be taken when implementing more advanced functionality within your object.</li>
+</ul>
+
+
+<h2>When to use an Iterating Business Object?</h2>
+
+<p>
+	IBOs are most commonly used when we need to work a large number of objects, 
+	such as data returned from a database query.
+</p>
+
+<p>
+	The choice of using an IBO versus using the original data really depends 
+	on how much behaviour you would include in your object. For example, 
+	if you have a query of users and the only additional behaviour you need 
+	is to calculate the age for each record then it may be better to include 
+	this as a calculated column and then just use the query data. However if 
+	you have a lot of extra functionality in your object that would be messy 
+	or complicated to include in the original query then an IBO may be a better option.
+</p>
+
+<h2>Using underlying Java iterators</h2>
+
+<p>
+	Within ColdFusion we also have the option of accessing the underlying Java 
+	iterators for arrays and structs.
+</p>
+
+<p>
+	For an array, we can use the following:
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> iterator = yourArray.iterator()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;iterator.hasNext()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> item = iterator.next()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    ...
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfoop&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<p>
+	For a struct, we can use:
+</p>
+
+
+
+
+
+
+<pre class="code">
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> iterator = yourStruct.values().iterator()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;iterator.hasNext()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> item = iterator.next()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    ...
+<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfoop&#62;</span></strong>
+</pre>
+
+
+
+
+
+
+<h3>Important note about Java iterators</h3>
+
+<p>
+	It is important to note that if your original array or struct is modified while 
+	you are iterating though their elements then an error will occur. If this is a 
+	possible situation then you can copy your array or struct before retrieving it's iterator. 
+</p>
+
+<h2>Extending your Iterators</h2>
+
+<p>
+	The description of the iterators we have discussed so far include at most a 
+	<b>hasNext()</b> function and a <b>next()</b> function. 
+</p>
+
+<p>
+	This very simple interface allows you to easily change the underlying implementation 
+	without affecting any client code using the iterators. There may be some situations 
+	where some additional functions may be useful to include.
+</p>
+
+<ul>
+<li>first() - moves the iterator pointer to the first item in the set</li>
+<li>last() - moves the iterator pointer to the last item in the set</li>
+<li>previous() - moves the iterator to the previous item in the set</li>
+<li>hasPrevious() - returns true if a previous item is available</li>
+<li>count() - returns a count of the number of items in the set</li>
+</ul>
+
+<p>
+	Keep in mind that by adding any of these functions you may limit your flexibility 
+	in changing the underlying implementation in the future. For example if you expose 
+	a count() or previous() function, then you would not be able to substitute in a 
+	Java iterator as these functions are not supported.
+</p>
+
+<h2>References</h2>
+
+<p>
+	Wikipedia - Iterator pattern<br/>
+	<a href="http://en.wikipedia.org/wiki/Iterator_pattern">http://en.wikipedia.org/wiki/Iterator_pattern</a>
+</p>
+<p>
+	Wikipedia - Iterator<br/>
+	<a href="http://en.wikipedia.org/wiki/Iterator">http://en.wikipedia.org/wiki/Iterator</a>
+</p>
+
+<p>
+	Dave Shuck - Converting ColdFusion Arrays to Java Iterators<br/>
+	<a href="http://daveshuck.instantspot.com/blog/2006/05/17/Converting-ColdFusion-Arrays-to-Java-Iterators">http://daveshuck.instantspot.com/blog/2006/05/17/Converting-ColdFusion-Arrays-to-Java-Iterators</a>
+</p>
+
+<h2>Iterator projects</h2>
+
+<p>
+	There are a couple of projects that provide generic implementations for iteration:
+</p>
+
+<p>
+	Collection Iterator - Brian Kotek (ColdFusion 9)<br/>
+	<a href="http://collectioniterator.riaforge.org/">http://collectioniterator.riaforge.org/</a>
+</p>
+
+<p>
+	Iterating Business Object - Peter Bell<br/>
+	<a href="http://ibo.riaforge.org/">http://ibo.riaforge.org/</a>
+</p>
+
+<p>
+	Iterator - Paul Marcotte<br/>
+	<a href="http://iterator.riaforge.org/">http://iterator.riaforge.org/</a>
+</p>
+
+<p>
+	Recordset - Paul Marcotte<br/>
+	<a href="http://recordset.riaforge.org/">http://recordset.riaforge.org/</a>
+</p>
+
