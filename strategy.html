@@ -1,0 +1,519 @@
+---
+layout: base
+title: Strategy
+---
+
+<h1>Strategy</h1>
+
+<p>
+	The strategy pattern provides a way for you to easily change the way an object behaves at runtime. 
+	It essentially allows you to &quot;plug&quot; some behaviour into an object.
+</p>
+
+<p>
+	For a CFML implementation there are two kinds of objects in this pattern; 
+	a <i>Context</i> and a <i>Strategy</i>.
+</p>
+
+<p>
+	The Context object is our main object; when we need a certain task done we ask 
+	the Context object to do it. Contained within the Context object is our Strategy object. 
+	When we ask the Context to perform a task, it asks the Strategy object to perform either 
+	some or all of the work.
+</p>
+
+<p>
+	<img alt='Context and Strategy UML diagram' src='assets/images/8EA2A72D7D6147351767E668A16E289B.png' />
+</p>
+
+<p>
+	If we were to replace the Strategy object with a different Strategy object then this would then affect 
+	the overall behaviour of the Context.
+</p>
+
+<p>
+	In other words, we may initially start out having a Context with one kind of Strategy object:
+</p>
+
+<p>
+	<img title='Context with a Simple Strategy' src='assets/images/9B3E18C6692612EC5182270C7A323238.png' />
+</p>
+
+<p>
+	Calling context.doSomething() performs some simple behaviour.
+</p>
+
+<p>
+	But we may then change the Strategy object to something a more complicated.
+</p>
+
+<p>
+	<img title='Context with a Simple Strategy' src='assets/images/F10E5C370E15A7F246DA02E884D78074.png' />
+</p>
+
+<p>
+	Calling context.doSomething() now performs a more complex behaviour.
+</p>
+
+<h2>How to provide the Strategy to the Context?</h2>
+
+<p>
+	There area number of ways to provide the Strategy to the Context, but some common techniques are:
+</p>
+
+<p>
+	1) Provide the Strategy to the Context's init() function:
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+<cffunction name="init" output="false">
+    <cfargument name="strategy" required="true">
+    <cfset variables.strategy = arguments.strategy>
+</cffunction>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	2) Provide the Strategy via a <i>setter</i>
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+<cffunction name="setStrategy" output="false">
+    <cfargument name="strategy" required="true">
+    <cfset variables.strategy = arguments.strategy>
+</cffunction>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	3) Provide the Strategy directly to the function that needs it
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<cffunction name="doSomethingWithThisStrategy" output="false">
+    <cfargument name="strategy" required="true">
+    ... code that uses the strategy ...
+</cffunction>
+{% endhighlight %}
+
+
+
+
+
+<h2>Example: Tank game</h2>
+
+
+<p>
+	Let's start with a simple game that demonstrates the idea of the Strategy pattern. 
+	In this game you have two tanks that move around a playing field and try to shoot each other. 
+	Your tank objects may look something like this:
+</p>
+
+<p>
+	<img alt='Tank UML diagram' src='assets/images/0B37D6B691639A899B6125FF35DBDCBB.png' />
+</p>
+
+<p>
+	Our simple tank object is responsible for both shooting and moving around.
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<cfcomponent name="Tank" output="false">
+
+    ... initialisation code here ...
+
+    <cffunction name="shoot" output="false">
+        ... code to perform shooting here ...
+    </cffunction>
+
+    <cffunction name="move" output="false">
+        ... code to perform moving here ...
+    </cffunction>
+
+</cfcomponent>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	This is great, but the game would be more interesting if you could collect upgrades that either 
+	increased the damage you inflict or increased your speed. 
+</p>
+
+<p>
+	Let's assume we can upgrade two aspects of our tank; the <i>turret</i> which affects the damage 
+	we inflict, and the <i>chassis</i> which determines how our tank moves. Let's revise our tank 
+	object to allow the tank turrets and chassis to be upgraded via <b>setTurret()</b> and <b>setChassis()</b> functions.
+</p>
+
+<p>
+	<img alt='Tank with Turret and Chassis UML diagram' src='assets/images/32C6F80F238C720EECA71C5F5AF00280.png' />
+</p>
+
+<p>
+	Now that we have a turret and a chassis, we can pass on the responsibility of shooting and moving to these new tank parts.
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<cfcomponent name="Tank" output="false">
+
+    ... initialisation code here ...
+
+    <cffunction name="setTurret" output="false">
+        <cfargument name="turret" required="true">
+        <cfset variables.turret = arguments.turret>
+    </cffunction>
+
+    <cffunction name="setChassis" output="false">
+        <cfargument name="chassis" required="true">
+        <cfset variables.chassis = arguments.chassis>
+    </cffunction>
+
+    <!--- When shooting we ask the turret to actually do the work --->
+    <cffunction name="shoot" output="false">
+        <cfset variables.turret.shoot()>
+    </cffunction>
+
+    <!--- When moving we ask the chassis to do the work --->
+    <cffunction name="move" output="false">
+        <cfset variables.chassis.move()>
+    </cffunction>
+
+</cfcomponent>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	The <b>setTurret()</b> and <b>setChassis()</b> functions make it easy for us to change the shooting 
+	and movement behaviour of the tank.
+</p>
+
+<p>
+	For example, we may start with a basic turret that fires basic shells, but later upgrade to a turbo 
+	turret that fires shells at a faster rate. We might even upgrade to an <i>anti-gravity</i> chassis 
+	which allows our tank to fly.
+</p>
+
+<p>
+	Let's take a look at some example code that demonstrates how our new tank object might be used. 
+	First we need to create a couple of different turrets and chassis.
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<!--- Couple of turrets --->
+<cfset basicTurret = createObject("component","BasicTurret").init()>
+<cfset turboTurret = createObject("component","TurboTurret").init()>
+
+<!--- Couple of chassis --->
+<cfset basicChassis = createObject("component","BasicChassis").init()>
+<cfset turboChassis = createObject("component","TurboChassis").init()>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	Now let's put our tank into action.
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<!--- Create our tank --->
+<cfset tank = createObject("component","Tank").init()>
+
+<!--- Equip it with a basic turret and chassis --->
+<cfset tank.setTurret(basicTurret)>
+<cfset tank.setChassis(basicChassis)>
+
+<!--- Move a bit and shoot. We've got a pretty lowly tank here --->
+<cfset tank.move()>
+<cfset tank.shoot()>
+
+<!--- Now equip the tank with a turbo turret and chassis --->
+<cfset tank.setTurret(turboTurret)>
+<cfset tank.setChassis(turboChassis)>
+
+<!--- Move a bit and shoot. Now we've got speedier tank shooting at twice the speed now! --->
+<cfset tank.move()>
+<cfset tank.shoot()>
+{% endhighlight %}
+
+
+
+
+
+<h2>Example: Payment gateways</h2>
+
+<p>
+	When making an online payment you may have a choice of which payment gateway to use; 
+	you may choose to use PayPal, Google Checkout or perhaps a local payment gateway provider. 
+	The Strategy pattern can be used to assign which payment gateway is used to handle the payment.
+</p>
+
+<p>
+	For this example, suppose you are developing a membership system and when a person registers 
+	or renews they are required to make a payment.
+</p>
+
+<p>
+	We may have a <b>Membership</b> object that knows the amount required for the transaction.
+</p>
+
+<p>
+	We also have a <b>Payment Gateway</b> object that knows how to process a payment. 
+	Let's assume that in this instance we need to use a PayPal payment gateway.
+</p>
+
+<p>
+	<img src='assets/images/81427B6EA0E06D5DC4AD99D3400BCAEB.png' />
+</p>
+
+<p>
+	When we call purchase() on the membership object, it asks the gateway object to perform some of the work.
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<cffunction name="purchase" output="false">
+    <cfargument name="gateway" required="true">
+    <cfargument name="cardNum" required="true">
+    <cfargument name="expiryYear" required="true">
+    <cfargument name="expiryMonth" required="true">
+
+    <cfset var amount = variables.STANDARD_MEMBERSHIP_FEE>
+    <cfset var results = arguments.gateway.processPayment(
+                                               arguments.cardNum, 
+                                               arguments.expiryYear, 
+                                               arguments.expiryYear, 
+                                               amount
+                                           )>
+
+    ... handle results here ...
+
+</cffunction>
+{% endhighlight %}
+
+
+
+
+<p>
+	The PayPalPaymentGateway object takes care of authenticating with PayPal and passing on any merchant details. 
+</p>
+
+<p>
+	If we want to swap the payment gateway to be the GoogleCheckout provider, 
+	then we would create a GoogleCheckoutPaymentGateway that also implements a processPayment() 
+	function with the same parameters. 
+</p>
+
+<p>
+	<img src='assets/images/573E1FDAC10F4B41817EAF1886DD0CAA.png' />
+</p>
+
+<p>
+	So let's take a look at how we might use our <b>membership</b> object.
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<!--- Create one of each of our payment gateways and put them into a lookup struct --->
+<cfset gateways = {}>
+<cfset gateways["paypal"] = createObject("component","PayPalPaymentGateway").init( ... paypal parameters here ... )>
+<cfset gateways["google"] = createObject("component","GoogleCheckoutPaymentGateway").init( ... google parameters here ... )>
+<cfset gateways["ezypay"] = createObject("component","EzyPayPaymentGateway").init( ... ezpay parameters here ... )>
+
+<!---Select the gateway based on an option chosen by the user --->
+<cfset gateway = gateways[selectedGateway]>
+
+<!--- Purchase the membership --->
+<cfset membership.purchase(gateway, cardNum, expiryYear, expiryMonth)>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	The final point to notice in this example is that the Payment Gateway is provided at
+	the point of purchase rather than via the init() function or a setter function.
+</p>
+
+
+<h2>CFML specific alternative to the Strategy Pattern</h2>
+
+<p>
+	Within CFML functions may be passed around as variables. 
+	This allows an alternative technique for implementing a Strategy pattern; 
+	rather than passing Strategy objects to the Context object you can pass Strategy 
+	<i>functions</i> to the Context object.
+</p>
+
+<p>
+	For example, suppose we need to calculate a journey from one location to another. 
+	We may provide an option to either travel the quick route or the scenic route. 
+	We can create a TravelStrategies object that knows how to calculate the quick or scenic routes. 
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<cfcomponent name="TravelStrategies" output="false">
+
+    <cffunction name="init" output="false">
+        <cfreturn this>
+    </cffunction>
+
+    <cffunction name="quick" output="false">
+        <cfargument name="from" required="true">
+        <cfargument name="to" required="true">
+        ... Calculate the quickest route ...
+        <cfreturn route>
+    </cffunction>
+
+    <cffunction name="scenic" output="false">
+        <cfargument name="from" required="true">
+        <cfargument name="to" required="true">
+        ... Calculate the most scenic route ...
+        <cfreturn route>
+    </cffunction>
+
+</cfcomponent>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	Then we may have a TravelPlanner that needs to use a travel strategy.
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<cfcomponent name="TravelPlanner" output="false">
+
+    ... initialisation code etc. ...
+
+    <cffunction name="setTravelStrategy" output="false">
+        <cfargument name="travelStrategy" required="true">
+        <!--- Note that the travelStrategy is a 'function reference' --->
+        <cfset variables.travelStrategy = arguments.travelStrategy>
+    </cffunction>
+
+    ... more code ...
+
+    <cffunction name="getPlan" output="false">
+        <!--- Call the function stored in the 'travelStrategy' variable ---> 
+        <cfset var route = variables.travelStrategy(variables.fromLocation,variables.toLocation)>
+        ... Some work to convert the route into an enhanced trip plan that describes places to visit ... 
+        <cfreturn tripPlan>
+    </cffunction>
+
+</cfcomponent>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	So to use our objects we may write:
+</p>
+
+
+
+
+
+{% highlight cfm %}
+<!--- Create our strategies and planner objects ---> 
+<cfset strategies = createObject("component","TravelStrategies").init()>
+<cfset planner = createObject("component","TravelPlanner").init()>
+
+<!--- Try a quick journey first --->
+<cfset planner.setTravelStrategy( strategies.quick )>
+<cfset plan = planner.getPlan()>
+
+<!--- Try a scenic journey next --->
+<cfset planner.setTravelStrategy( strategies.scenic )>
+<cfset plan = planner.getPlan()>
+{% endhighlight %}
+
+
+
+
+
+<p>
+	The important thing to notice here is that we pass a <i>function</i> into the setTravelStrategy() 
+	function rather than an object. Then when we call the getPlan() function is just executes the 
+	<i>travelStrategy</i> function without knowledge of which strategy it actually is. 
+</p>
+
+<h2>Discussion</h2>
+
+<p>
+	See the discussion of this page on the OOCF mailing list
+</p>
+
+<p>
+	<a href="http://groups.google.com.au/group/coldfusionoo/browse_thread/thread/60661c9abbb38ec9" >http://groups.google.com.au/group/coldfusionoo/browse_thread/thread/60661c9abbb38ec9</a>
+</p>
+
+<h2>References</h2>
+
+<p>
+	Wikipedia - Strategy Pattern<br/>
+	<a href="http://en.wikipedia.org/wiki/Strategy_pattern">http://en.wikipedia.org/wiki/Strategy_pattern</a>
+</p>
+
