@@ -1,0 +1,270 @@
+---
+layout: base
+title: Iterator
+---
+
+<h1>Mediator</h1>
+
+<p>
+	The Mediator pattern provides a technique for handling complicated 
+	communication logic between several objects.
+</p>
+
+<p>
+	Imagine you have a number of objects that need to interact with each other. 
+	When one of your objects is changed then it, in turn, needs to call some 
+	functions on some of the other objects. When those objects are changed, 
+	they may need to call functions on yet further objects.
+</p>
+
+<p>
+	This is an example of complicated object communication, where each object 
+	needs to know about several other objects.
+</p>
+
+<p>
+	<img alt='Complicated object communication' src='assets/images/9535C34D1E906182CC77434F6914AE03.png' />
+</p>
+
+<p>
+	The Mediator pattern suggests we move any logic relating to how the objects communicate 
+	into a new separate object. So rather than having the communication logic spread throughout 
+	all of the individual objects, we instead have one object that knows how all of this communication 
+	should be organised. All of our individual objects now only communicate with this new central object 
+	rather than with each other.
+</p>
+
+<p>
+	This new central object is our <b>Mediator</b>.
+</p>
+
+<p>
+	<img alt='Object communication via a Mediator' src='assets/images/B8B061A2591BAF4AE960F096E803DA38.png' />
+</p>
+
+<p>
+	In the Mediator pattern the objects the Mediator communicates with are referred to as <b>Colleagues</b>.
+</p>
+
+<p>
+	Let's work through an example of how the Mediator pattern might be applied.
+</p>
+
+<h2>Example: Encapsulating complicated logic</h2>
+
+<p>
+	Suppose we have a set of objects A, B, C and D that may be started or stopped. 
+</p>
+
+<p>
+	<img alt='An object that can start and stop' src='assets/images/046B66F03B8DDD35C277FECA7272FD27.png' />
+</p>
+
+<p>
+	They have some rules of operation such as:
+</p>
+
+<ul>
+<li>if A is stopped then B and C must be started,</li>
+<li>if B is stopped then C and D must be started,</li>
+<li>if C is stopped then D and A must be started,</li>
+<li>if D is stopped then A and B must be started.</li>
+</ul>
+
+<p>
+	This set of communication is a little complicated to manage. 
+	Without a Mediator the communication logic would be embedded within the objects themselves.
+</p>
+
+<p>
+	<img alt='Complicated communication logic' src='assets/images/1CE53C825E8DCD5C5D363AFF96A249A8.png' />
+</p>
+
+<p>
+	An implementation of object A without a Mediator might be something like this.
+</p>
+
+
+
+
+
+
+{% highlight cfm %}
+component {
+
+    variables.b = 0
+    variables.c = 0
+
+    // Function to partner objects together
+    function partnerWith(b,c) {
+        variables.b = b;
+        variables.c = c;
+    }
+
+    function stop() {
+        b.start();
+        c.start();
+    }
+
+    function start() {
+        // Do something
+    }
+
+}
+{% endhighlight %}
+
+
+
+
+
+
+
+<p>
+	We can see that object A is directly partnered with (i.e. coupled with) Object B and Object C
+</p>
+
+<p>
+	To simplify these objects and to reduce their coupling with each other, let's introduce our <b>Mediator</b>.
+</p>
+
+<p>
+	<img alt='Mediator' src='assets/images/E195B6FF7EF5F0CD04E20A143732FA86.png' />
+</p>
+
+<p>
+	Whenever one of our colleague objects is stopped it needs to tell the Mediator that this has occurred. In this example, our objects A, B , C and D will call the <b>stopping()</b> function on the Mediator when they are stopped. 
+</p>
+
+<p>
+	Now our objects only communicate with the Mediator rather than with each other. This means that our objects are only coupled with the Mediator, rather that with multiple colleagues.
+</p>
+
+<p>
+	<img title='Mediator' src='assets/images/4F3C651788756280843666C2836AD29E.png' />
+</p>
+
+<p>
+	Our object A may now look something like this:
+</p>
+
+
+
+
+
+{% highlight cfm %}
+component {
+
+    variables.mediator = 0;
+
+    // Function to tell the object about the mediator
+    function setMediator(mediator) {
+        variables.mediator = mediator;
+    }
+
+    // Function to return the objects unique id
+    function id() {
+        return 'A'
+    }
+
+    function stop() {
+        mediator.stopping(this);
+    }
+
+    function start() {
+        // Do something
+    }
+
+}
+{% endhighlight %}
+
+
+
+
+
+
+
+<p>
+	When <b>stop()</b> is called on object A, it just notifies the Mediator 
+	that it is stopping, passing itself as the parameter.
+</p>
+
+<p>
+	Our Mediator now handles the communication logic that deals with the other 
+	objects via the <b>stopping()</b> function.
+</p>
+
+
+
+
+
+{% highlight cfm %}
+component {
+
+    // The mediator needs to know about all of the objects
+    variables.a = 0;
+    variables.b = 0;
+    variables.c = 0;
+    variables.d = 0;
+
+    // Function to tell the mediator about all of the objects.
+    function setColleagues(a,b,c,d) {
+        variables.a = a;
+        variables.b = b;
+        variables.c = c;
+        variables.d = d;
+    }
+
+    // All communication logic is now held within our mediator
+    function stopping(object) {
+        if (object.id() == 'A') {
+            b.start();
+            c.start();
+        }
+        else if (object.id() == 'B') {
+            c.start();
+            d.start();
+        }
+        else if (object.id() == 'C') {
+            d.start();
+            a.start();
+        }
+        else if (object.id() == 'D') {
+            a.start();
+            b.start();
+        }
+    }
+
+}
+{% endhighlight %}
+
+
+
+
+
+
+
+<h2>Colleague to Mediator communication</h2>
+
+<p>
+	As you've see in this example, the colleague objects need to pass messages 
+	to the mediator which, in turn, forward messages onto other colleagues.
+</p>
+
+<p>
+	In some situations, as in this example, the colleagues have direct knowledge 
+	of the mediator object and call whatever methods are required.
+</p>
+
+<p>
+	An alternative to this is to implement the colleague to mediator communication 
+	using the <a href="http://en.wikipedia.org/wiki/Observer_pattern">Observer pattern</a>, 
+	which reduces the coupling between your colleague objects and your mediator.
+</p>
+
+<h2>References</h2>
+
+<p>
+	Wikipedia - Mediator Pattern<br/>
+	<a href="http://en.wikipedia.org/wiki/Mediator_pattern">http://en.wikipedia.org/wiki/Mediator_pattern</a>
+</p>
+
