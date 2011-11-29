@@ -86,14 +86,13 @@ title: Iterator
 
 
 
-
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> iterator = ...<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;iterator.hasNext()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> element = iterator.next()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    ... <span style="color:#7F0055; font-weight: bold; ">do</span> something with element ...
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfloop&#62;</span></strong>
-</pre>
+{% highlight cfm %}
+<cfset iterator = ...>
+<cfloop condition="iterator.hasNext()">
+    <cfset element = iterator.next()>
+    ... do something with element ...
+</cfloop>
+{% endhighlight %}
 
 
 
@@ -128,19 +127,18 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<cfcomponent output="false">
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfcomponent</span></strong> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cfset variables.array = 0>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cffunction name="init" output="false">
+        <cfargument name="array" required="true">
+        <cfset variables.array = arguments.array>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;array&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = arguments.array<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
-
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
-</pre>
+</cfcomponent>
+{% endhighlight %}
 
 
 
@@ -157,25 +155,25 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<cfcomponent output="false">
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfcomponent</span></strong> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cfset variables.array = 0>
+    <cfset variables.next = 0>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.next = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cffunction name="init" output="false">
+        <cfargument name="array" required="true">
+        <cfset variables.array = arguments.array>
+        <cfset variables.next = 1>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;array&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = arguments.array<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.next = 1<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+    <cffunction name="hasNext" output="false">
+        <cfreturn variables.next le arrayLen(variables.array)>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;hasNext&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.next le arrayLen(variables.array)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+</cfcomponent>
+{% endhighlight %}
 
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
-</pre>
 
 
 
@@ -191,31 +189,31 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<cfcomponent output="false">
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfcomponent</span></strong> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cfset variables.array = 0>
+    <cfset variables.next = 0>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.next = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cffunction name="init" output="false">
+        <cfargument name="array" required="true">
+        <cfset variables.array = arguments.array>
+        <cfset variables.next = 1>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;array&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.array = arguments.array<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.next = 1<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+    <cffunction name="hasNext" output="false">
+        <cfreturn variables.next le arrayLen(variables.array)>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;hasNext&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.next le arrayLen(variables.array)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+    <cffunction name="next" output="false">
+        <cfset element = variables.array[variables.next]>
+        <cfset variables.next = variables.next + 1>
+        <cfreturn element>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;next&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> element = variables.array[variables.next]<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.next = variables.next + 1<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> element<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+</cfcomponent>
+{% endhighlight %}
 
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
-</pre>
 
 
 
@@ -229,20 +227,20 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<cfset arr = []>
+<cfset arr[1] = "Red">
+<cfset arr[2] = "Green">
+<cfset arr[3] = "Blue">
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> arr = []<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> arr[1] = <span style="color:#2A00FF; ">&quot;Red&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> arr[2] = <span style="color:#2A00FF; ">&quot;Green&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> arr[3] = <span style="color:#2A00FF; ">&quot;Blue&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<cfset iterator = createObject("component","ArrayIterator").init(arr)>
 
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> iterator = <span style="color:#7F0055; font-weight: bold; ">createObject</span>(<span style="color:#2A00FF; ">&quot;component&quot;</span>,<span style="color:#2A00FF; ">&quot;ArrayIterator&quot;</span>).init(arr)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<cfloop condition="iterator.hasNext()">
+    <cfset colour = iterator.next()>
+    <!--- Do something with the colour variable--->
+</cfloop>
+{% endhighlight %}
 
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;iterator.hasNext()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> colour = iterator.next()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <span style="color:#3F7F5F; ">&#60;!--- Do something with the colour variable---&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfloop&#62;</span></strong>
-</pre>
 
 
 
@@ -279,33 +277,34 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<component output="false">
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;component</span></strong> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <!--- Array to hold our shopping cart items --->
+    <cfset variables.instance = {}>
+    <cfset variables.instance.items = []>
 
-    <span style="color:#3F7F5F; ">&#60;!--- Array to hold our shopping cart items ---&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.instance = {}<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.instance.items = []<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <!--- Initialisation --->
+    <cffunction name="init" output="false">
+        <cfreturn this>
+    </cffunction>
 
-    <span style="color:#3F7F5F; ">&#60;!--- Initialisation ---&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> <span style="color:#7F0055; font-weight: bold; ">this</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+    <!--- Add an item to the cart --->
+    <cffunction name="addItem" output="false">
+        <cfargument name="item" required="true">
+        <cfset arrayAppend(variables.instance.items,arguments.item)>
+    </cffunction>
 
-    <span style="color:#3F7F5F; ">&#60;!--- Add an item to the cart ---&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;addItem&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;item&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> arrayAppend(variables.instance.items,arguments.item)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+    <!--- Return the items as an iterator --->
+    <cffunction name="items" output="false">
+        <cfset var items = createObject("component","ArrayIterator").init(variables.instance.items)>
+        <cfreturn items>
+    </cffunction>
 
-    <span style="color:#3F7F5F; ">&#60;!--- Return the items as an iterator ---&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;items&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> <span style="color:#7F0055; font-weight: bold; ">var</span> items = <span style="color:#7F0055; font-weight: bold; ">createObject</span>(<span style="color:#2A00FF; ">&quot;component&quot;</span>,<span style="color:#2A00FF; ">&quot;ArrayIterator&quot;</span>).init(variables.instance.items)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> items<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+</cfcomponent>
+{% endhighlight %}
 
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
-</pre>
+
 
 
 
@@ -320,18 +319,18 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<cfset cart.addItem(item1)>
+<cfset cart.addItem(item2)>
+<cfset cart.addItem(item3)>
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> cart.addItem(item1)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> cart.addItem(item2)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> cart.addItem(item3)<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+<cfset items = cart.items()>
+<cfloop condition="items.hasNext()">
+    <cfset item = items.next()>
+    <!--- Do something with item --->
+</cfloop>
+{% endhighlight %}
 
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> items = cart.items()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;items.hasNext()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> item = items.next()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <span style="color:#3F7F5F; ">&#60;!--- Do something with item ---&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfloop&#62;</span></strong>
-</pre>
 
 
 
@@ -397,15 +396,15 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<cfset userIBO = ...>
+<cfloop condition="userIBO.next()">
+    <cfoutput>
+        #userIBO.name()#, #userIBO.age()#<br/>
+    </cfoutput>
+</cfloop>
+{% endhighlight %}
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> userIBO = ...<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;userIBO.next()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfoutput&#62;</span></strong>
-        #userIBO.name()#, #userIBO.age()#<strong><span style="color:#7F0055; font-weight: bold; ">&#60;br</span></strong><span style="color:#7F0055; font-weight: bold; ">/&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfoutput&#62;</span></strong>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfloop&#62;</span></strong>
-</pre>
 
 
 
@@ -431,20 +430,20 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<component name="UserIBO" output="false">
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;component</span></strong> name=<span style="color:#2A00FF; ">&quot;UserIBO&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cfset variables.userQuery = 0>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cffunction name="init" output="false">
+        <cfargument name="userQuery" required="true">
+        <cfset variables.userQuery = arguments.userQuery>
+        <cfreturn this>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;userQuery&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = arguments.userQuery<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> <span style="color:#7F0055; font-weight: bold; ">this</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+</cfcomponent>
+{% endhighlight %}
 
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
-</pre>
 
 
 
@@ -461,26 +460,26 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<component name="UserIBO" output="false">
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;component</span></strong> name=<span style="color:#2A00FF; ">&quot;UserIBO&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cfset variables.userQuery = 0>
+    <cfset variables.currentRow = 0>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.currentRow = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cffunction name="init" output="false">
+        <cfargument name="userQuery" required="true">
+        <cfset variables.userQuery = arguments.userQuery>
+        <cfreturn this>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;userQuery&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = arguments.userQuery<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> <span style="color:#7F0055; font-weight: bold; ">this</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+    <cffunction name="next" output="false">
+        <cfset variables.currentRow = variables.currentRow + 1>
+        <cfreturn variables.currentRow le variables.userQuery.recordCount>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;next&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.currentRow = variables.currentRow + 1<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.currentRow le variables.userQuery.recordCount<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+</cfcomponent>
+{% endhighlight %}
 
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
-</pre>
 
 
 
@@ -496,38 +495,38 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<component name="UserIBO" output="false">
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;component</span></strong> name=<span style="color:#2A00FF; ">&quot;UserIBO&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cfset variables.userQuery = 0>
+    <cfset variables.currentRow = 0>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.currentRow = 0<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+    <cffunction name="init" output="false">
+        <cfargument name="userQuery" required="true">
+        <cfset variables.userQuery = arguments.userQuery>
+        <cfreturn this>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;init&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfargument</span></strong> name=<span style="color:#2A00FF; ">&quot;userQuery&quot;</span> required=<span style="color:#2A00FF; ">&quot;true&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.userQuery = arguments.userQuery<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> <span style="color:#7F0055; font-weight: bold; ">this</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+    <cffunction name="next" output="false">
+        <cfset variables.currentRow = variables.currentRow + 1>
+        <cfreturn variables.currentRow le variables.userQuery>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;next&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> variables.currentRow = variables.currentRow + 1<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.currentRow le variables.userQuery<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+    <cffunction name="name" output="false">
+        <cfreturn variables.userQuery["name"][variables.currentRow]>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;name&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.userQuery[<span style="color:#2A00FF; ">&quot;name&quot;</span>][variables.currentRow]<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+    <cffunction name="dateOfBirth" output="false">
+        <cfreturn variables.userQuery["dob"][variables.currentRow]>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;dateOfBirth&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> variables.userQuery[<span style="color:#2A00FF; ">&quot;dob&quot;</span>][variables.currentRow]<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+    <cffunction name="age" output="false">
+        <cfreturn dateDiff("yyyy", dateOfBirth(), now())>
+    </cffunction>
 
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cffunction</span></strong> name=<span style="color:#2A00FF; ">&quot;age&quot;</span> output=<span style="color:#2A00FF; ">&quot;false&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-        <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfreturn</span></strong> dateDiff(<span style="color:#2A00FF; ">&quot;yyyy&quot;</span>, dateOfBirth(), now())<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cffunction&#62;</span></strong>
+</cfcomponent>
+{% endhighlight %}
 
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfcomponent&#62;</span></strong>
-</pre>
 
 
 
@@ -542,15 +541,15 @@ title: Iterator
 
 
 
+{% highlight cfm %}
+<cfset userIBO = userService.findAllUsers()>
+<cfloop condition="userIBO.next()">
+    <cfoutput>
+        #userIBO.name()#, #userIBO.age()#<br/>
+    </cfoutput>
+</cfloop>
+{% endhighlight %}
 
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> userIBO = userService.findAllUsers()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;userIBO.next()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfoutput&#62;</span></strong>
-        #userIBO.name()#, #userIBO.age()#<strong><span style="color:#7F0055; font-weight: bold; ">&#60;br</span></strong><span style="color:#7F0055; font-weight: bold; ">/&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfoutput&#62;</span></strong>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfloop&#62;</span></strong>
-</pre>
 
 
 
@@ -619,14 +618,14 @@ title: Iterator
 
 
 
-
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> iterator = yourArray.iterator()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;iterator.hasNext()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> item = iterator.next()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+{% highlight cfm %}
+<cfset iterator = yourArray.iterator()>
+<cfloop condition="iterator.hasNext()">
+    <cfset item = iterator.next()>
     ...
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfoop&#62;</span></strong>
-</pre>
+</cfoop>
+{% endhighlight %}
+
 
 
 
@@ -641,14 +640,14 @@ title: Iterator
 
 
 
-
-<pre class="code">
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> iterator = yourStruct.values().iterator()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfloop</span></strong> condition=<span style="color:#2A00FF; ">&quot;iterator.hasNext()&quot;</span><span style="color:#7F0055; font-weight: bold; ">&#62;</span>
-    <strong><span style="color:#7F0055; font-weight: bold; ">&#60;cfset</span></strong> item = iterator.next()<span style="color:#7F0055; font-weight: bold; ">&#62;</span>
+{% highlight cfm %}
+<cfset iterator = yourStruct.values().iterator()>
+<cfloop condition="iterator.hasNext()">
+    <cfset item = iterator.next()>
     ...
-<strong><span style="color:#7F0055; font-weight: bold; ">&#60;/cfoop&#62;</span></strong>
-</pre>
+</cfoop>
+{% endhighlight %}
+
 
 
 
