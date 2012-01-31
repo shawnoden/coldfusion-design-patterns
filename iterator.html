@@ -509,7 +509,7 @@ title: Iterator
 
     <cffunction name="next" output="false">
         <cfset variables.currentRow = variables.currentRow + 1>
-        <cfreturn variables.currentRow le variables.userQuery>
+        <cfreturn variables.currentRow le variables.userQuery.recordCount>
     </cffunction>
 
     <cffunction name="name" output="false">
